@@ -39,9 +39,28 @@ export interface PaymentDetails {
   cvv: string;
 }
 
+export type FawranAliasType = "Mobile Number" | "IBAN" | "Other";
+
+export interface PaymentConfirmationDetails {
+  method: PaymentOptionId;
+  cardholderName?: string;
+  cardNumber?: string;
+  provider?: string;
+  aliasType?: FawranAliasType;
+  aliasValue?: string;
+}
+
+export interface FawranPaymentDetails {
+  provider: string;
+  aliasType: FawranAliasType;
+  aliasValue: string;
+}
+
+export type PaymentOptionId = "himyan" | "naps" | "fawran";
+
 export interface BookingRecord {
   bookingReference?: string;
-  status?: "draft" | "pending" | "confirmed";
+  status?: "draft" | "confirmed";
   search?: SearchData;
   flight?: FlightSelection;
   passenger?: PassengerDetails;
@@ -65,9 +84,19 @@ export interface BookingRecord {
     grandTotal: number;
   };
   payment?: {
-    cardholderName: string;
-    last4: string;
+    cardholderName?: string;
+    last4?: string;
+    method?: PaymentOptionId;
+    provider?: string;
+    aliasType?: FawranAliasType;
+    aliasValue?: string;
   };
+  paymentDraft?: {
+    cardholderName: string;
+    cardNumber: string;
+  };
+  fawranDraft?: FawranPaymentDetails;
+  selectedPaymentOption?: PaymentOptionId;
   createdAt?: string;
 }
 
@@ -109,31 +138,42 @@ export function generateBookingReference() {
   return `${randomLetters}${randomDigits}`;
 }
 
-export function confirmBooking(payment: PaymentDetails) {
+export function confirmBooking(payment: PaymentConfirmationDetails) {
   if (typeof window === "undefined") return null;
 
   const current = readBookingDraft();
+  const { paymentDraft, fawranDraft, selectedPaymentOption, ...persistedBooking } = current;
   const bookingReference = current.bookingReference || generateBookingReference();
+  const method = payment.method || selectedPaymentOption || "himyan";
 
-  const pending: BookingRecord = {
-    ...current,
+  const confirmed: BookingRecord = {
+    ...persistedBooking,
     bookingReference,
-    status: "pending",
+    status: "confirmed",
     createdAt: new Date().toISOString(),
-    payment: {
-      cardholderName: payment.cardholderName,
-      last4: payment.cardNumber.replace(/\s/g, "").slice(-4),
-    },
+    payment:
+      method === "fawran"
+        ? {
+            method,
+            provider: payment.provider || fawranDraft?.provider,
+            aliasType: payment.aliasType || fawranDraft?.aliasType,
+            aliasValue: payment.aliasValue || fawranDraft?.aliasValue,
+          }
+        : {
+            method,
+            cardholderName: payment.cardholderName || paymentDraft?.cardholderName,
+            last4: (payment.cardNumber || paymentDraft?.cardNumber || "").replace(/\s/g, "").slice(-4),
+          },
   };
 
   const history = readBookingHistory();
-  const index = history.findIndex(item => item.bookingReference === bookingReference);
-  if (index >= 0) history[index]=pending;
-  else history.unshift(pending);
+  const index = history.findIndex((item) => item.bookingReference === bookingReference);
+  if (index >= 0) history[index] = confirmed;
+  else history.unshift(confirmed);
 
   window.localStorage.setItem(BOOKING_HISTORY_KEY, JSON.stringify(history));
-  window.localStorage.setItem(BOOKING_STORAGE_KEY, JSON.stringify(pending));
-  return pending;
+  window.localStorage.setItem(BOOKING_STORAGE_KEY, JSON.stringify(confirmed));
+  return confirmed;
 }
 
 export function readBookingHistory(): BookingRecord[] {

@@ -29,7 +29,7 @@ export default function SeatsPage() {
       seat: selectedSeat.id,
       seatSelection: selectedSeat,
     });
-    router.push("/step5");
+    router.push("/payment-gateway");
   }
 
   return (
