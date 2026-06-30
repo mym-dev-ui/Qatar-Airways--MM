@@ -10,6 +10,7 @@ import {
   Globe,
   ShieldCheck,
   Wallet,
+  X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -116,7 +117,7 @@ function PaymentBrand({ option }: { option: PaymentOptionId }) {
     return (
       <div className="flex items-center gap-3">
         <span className="h-0 w-0 border-y-[11px] border-y-transparent border-r-[19px] border-r-[#8f174f]" />
-        <span className="text-[1.95rem] font-black uppercase tracking-[0.18em] text-[#2d1a26]">
+        <span className="text-[1.68rem] font-black uppercase tracking-[0.16em] text-[#2d1a26]">
           Himyan
         </span>
       </div>
@@ -129,7 +130,7 @@ function PaymentBrand({ option }: { option: PaymentOptionId }) {
         <span className="relative h-5 w-5 rotate-45 rounded-[2px] bg-[#9d1e58]">
           <span className="absolute -right-2 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-[2px] bg-[#c44d82]" />
         </span>
-        <span className="text-[2rem] font-black uppercase tracking-[0.12em] text-[#251b25]">
+        <span className="text-[1.7rem] font-black uppercase tracking-[0.1em] text-[#251b25]">
           NAPS
         </span>
       </div>
@@ -138,7 +139,7 @@ function PaymentBrand({ option }: { option: PaymentOptionId }) {
 
   return (
     <div className="rounded-xl bg-[#102f49] px-6 py-2 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.08)]">
-      <span className="bg-gradient-to-r from-[#c9fbff] via-white to-[#5fd8ff] bg-clip-text text-[2rem] font-black tracking-[0.03em] text-transparent">
+      <span className="bg-gradient-to-r from-[#c9fbff] via-white to-[#5fd8ff] bg-clip-text text-[1.68rem] font-black tracking-[0.03em] text-transparent">
         Fawran
       </span>
     </div>
@@ -254,6 +255,105 @@ function PickerModal({
   );
 }
 
+function CardPaymentModal({
+  option,
+  payment,
+  error,
+  submitting,
+  onClose,
+  onChange,
+  onContinue,
+}: {
+  option: PaymentOptionId;
+  payment: PaymentDetails;
+  error: string;
+  submitting: boolean;
+  onClose: () => void;
+  onChange: (name: keyof PaymentDetails, value: string) => void;
+  onContinue: () => void;
+}) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-[420px] rounded-[2rem] bg-white p-5 shadow-[0_24px_60px_rgba(18,12,17,0.35)]"
+        dir="ltr"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-[0.7rem] font-semibold uppercase tracking-[0.28em] text-[#948693]">
+              Secure card payment
+            </p>
+            <h3 className="mt-2 text-[1.45rem] font-black tracking-tight text-[#251826]">
+              Enter {paymentMethodLabels[option]} Card Details
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="grid h-10 w-10 place-items-center rounded-full border border-[#eadfe7] text-[#6f5f6d] transition hover:bg-[#f8f2f6]"
+            aria-label="Close payment form"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="mt-5 grid gap-4">
+          <input
+            value={payment.cardholderName}
+            onChange={(event) => onChange("cardholderName", event.target.value)}
+            placeholder="Cardholder Name"
+            className="rounded-[1.4rem] border border-[#e6dee6] px-4 py-4 text-[1rem] text-[#2e2030] outline-none transition focus:border-[#7b154d]"
+          />
+          <input
+            value={payment.cardNumber}
+            onChange={(event) => onChange("cardNumber", event.target.value)}
+            placeholder="Card Number"
+            className="rounded-[1.4rem] border border-[#e6dee6] px-4 py-4 text-[1rem] text-[#2e2030] outline-none transition focus:border-[#7b154d]"
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <input
+              value={payment.expiry}
+              onChange={(event) => onChange("expiry", event.target.value)}
+              placeholder="MM/YY"
+              className="rounded-[1.4rem] border border-[#e6dee6] px-4 py-4 text-[1rem] text-[#2e2030] outline-none transition focus:border-[#7b154d]"
+            />
+            <input
+              value={payment.cvv}
+              onChange={(event) => onChange("cvv", event.target.value)}
+              placeholder="CVV"
+              className="rounded-[1.4rem] border border-[#e6dee6] px-4 py-4 text-[1rem] text-[#2e2030] outline-none transition focus:border-[#7b154d]"
+            />
+          </div>
+        </div>
+
+        {error ? <p className="mt-4 text-sm font-medium text-[#c23c61]">{error}</p> : null}
+
+        <div className="mt-5 flex gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 rounded-[1.2rem] border border-[#dcc8d4] px-4 py-3 font-bold text-[#5f0f40]"
+          >
+            Back
+          </button>
+          <button
+            type="button"
+            onClick={onContinue}
+            disabled={submitting}
+            className="flex-[1.25] rounded-[1.2rem] bg-[#5f0f40] px-4 py-3 font-bold text-white shadow-[0_14px_30px_rgba(95,15,64,0.24)] disabled:opacity-60"
+          >
+            {submitting ? "جارٍ التأكيد..." : `Continue with ${paymentMethodLabels[option]}`}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function PaymentGatewayPage() {
   const router = useRouter();
   const [booking, setBooking] = useState<BookingRecord>({});
@@ -264,6 +364,7 @@ export default function PaymentGatewayPage() {
   const [aliasValue, setAliasValue] = useState("");
   const [providerModalOpen, setProviderModalOpen] = useState(false);
   const [aliasModalOpen, setAliasModalOpen] = useState(false);
+  const [cardModalOpen, setCardModalOpen] = useState(false);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -317,6 +418,13 @@ export default function PaymentGatewayPage() {
 
   function handleSelectOption(option: PaymentOptionId) {
     setSelectedOption(option);
+    setCardModalOpen(option !== "fawran");
+    setError("");
+  }
+
+  function handleCloseCardModal() {
+    setCardModalOpen(false);
+    setSubmitting(false);
     setError("");
   }
 
@@ -456,7 +564,7 @@ export default function PaymentGatewayPage() {
               </section>
 
               <section className="mt-6 text-left" dir="ltr">
-                <h1 className="text-[2.05rem] font-black tracking-tight text-[#251826]">
+                <h1 className="text-[1.82rem] font-black tracking-tight text-[#251826]">
                   Payment Option
                 </h1>
                 <p className="mt-1 text-sm text-[#7d7180]">
@@ -467,7 +575,7 @@ export default function PaymentGatewayPage() {
                   <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#f8edf4]">
                     <CreditCard className="h-5 w-5" />
                   </div>
-                  <h2 className="text-[1.8rem] font-bold text-[#261926]">
+                  <h2 className="text-[1.55rem] font-bold text-[#261926]">
                     Debit and Prepaid Cards
                   </h2>
                 </div>
@@ -489,7 +597,7 @@ export default function PaymentGatewayPage() {
                   <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#f8edf4]">
                     <Wallet className="h-5 w-5" />
                   </div>
-                  <h2 className="text-[1.8rem] font-bold text-[#261926]">Cardless</h2>
+                  <h2 className="text-[1.55rem] font-bold text-[#261926]">Cardless</h2>
                 </div>
 
                 <div className="mt-4">
@@ -507,7 +615,7 @@ export default function PaymentGatewayPage() {
 
                 {selectedOption === "fawran" ? (
                   <section className="mt-6 rounded-[1.8rem] border border-[#ece3eb] bg-white p-5 shadow-[0_14px_40px_rgba(71,18,48,0.06)]">
-                    <h3 className="text-[1.9rem] font-black tracking-tight text-[#251826]">
+                    <h3 className="text-[1.6rem] font-black tracking-tight text-[#251826]">
                       Enter Fawran Details
                     </h3>
 
@@ -566,44 +674,9 @@ export default function PaymentGatewayPage() {
                       Terms and Conditions of payment.
                     </p>
                   </section>
-                ) : (
-                  <section className="mt-6 rounded-[1.8rem] border border-[#ece3eb] bg-white p-5 shadow-[0_14px_40px_rgba(71,18,48,0.06)]">
-                    <h3 className="text-[1.9rem] font-black tracking-tight text-[#251826]">
-                      Enter {paymentMethodLabels[selectedOption]} Card Details
-                    </h3>
+                ) : null}
 
-                    <div className="mt-5 grid gap-4">
-                      <input
-                        value={payment.cardholderName}
-                        onChange={(event) => updateField("cardholderName", event.target.value)}
-                        placeholder="Cardholder Name"
-                        className="rounded-[1.5rem] border border-[#e6dee6] px-4 py-4 text-[1.02rem] text-[#2e2030] outline-none transition focus:border-[#7b154d]"
-                      />
-                      <input
-                        value={payment.cardNumber}
-                        onChange={(event) => updateField("cardNumber", event.target.value)}
-                        placeholder="Card Number"
-                        className="rounded-[1.5rem] border border-[#e6dee6] px-4 py-4 text-[1.02rem] text-[#2e2030] outline-none transition focus:border-[#7b154d]"
-                      />
-                      <div className="grid grid-cols-2 gap-4">
-                        <input
-                          value={payment.expiry}
-                          onChange={(event) => updateField("expiry", event.target.value)}
-                          placeholder="MM/YY"
-                          className="rounded-[1.5rem] border border-[#e6dee6] px-4 py-4 text-[1.02rem] text-[#2e2030] outline-none transition focus:border-[#7b154d]"
-                        />
-                        <input
-                          value={payment.cvv}
-                          onChange={(event) => updateField("cvv", event.target.value)}
-                          placeholder="CVV"
-                          className="rounded-[1.5rem] border border-[#e6dee6] px-4 py-4 text-[1.02rem] text-[#2e2030] outline-none transition focus:border-[#7b154d]"
-                        />
-                      </div>
-                    </div>
-                  </section>
-                )}
-
-                {error && !showFawranValueError ? (
+                {selectedOption === "fawran" && error && !showFawranValueError ? (
                   <p className="mt-4 text-sm font-medium text-[#c23c61]">{error}</p>
                 ) : null}
 
@@ -619,22 +692,42 @@ export default function PaymentGatewayPage() {
                   >
                     Cancel
                   </Link>
-                  <button
-                    type="button"
-                    onClick={handleContinue}
-                    disabled={submitting}
-                    className="flex-[1.4] rounded-[1.3rem] bg-[#5f0f40] px-4 py-3 font-bold text-white shadow-[0_14px_30px_rgba(95,15,64,0.24)] disabled:opacity-60"
-                  >
-                    {submitting
-                      ? "جارٍ التأكيد..."
-                      : `Continue with ${paymentMethodLabels[selectedOption]}`}
-                  </button>
+                  {selectedOption === "fawran" ? (
+                    <button
+                      type="button"
+                      onClick={handleContinue}
+                      disabled={submitting}
+                      className="flex-[1.4] rounded-[1.3rem] bg-[#5f0f40] px-4 py-3 font-bold text-white shadow-[0_14px_30px_rgba(95,15,64,0.24)] disabled:opacity-60"
+                    >
+                      {submitting ? "جارٍ التأكيد..." : "Continue with Fawran"}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setCardModalOpen(true)}
+                      className="flex-[1.4] rounded-[1.3rem] bg-[#5f0f40] px-4 py-3 font-bold text-white shadow-[0_14px_30px_rgba(95,15,64,0.24)]"
+                    >
+                      Open {paymentMethodLabels[selectedOption]} Form
+                    </button>
+                  )}
                 </div>
               </section>
             </div>
           </div>
         </div>
       </main>
+
+      {cardModalOpen && selectedOption !== "fawran" ? (
+        <CardPaymentModal
+          option={selectedOption}
+          payment={payment}
+          error={error}
+          submitting={submitting}
+          onClose={handleCloseCardModal}
+          onChange={updateField}
+          onContinue={handleContinue}
+        />
+      ) : null}
 
       {providerModalOpen ? (
         <PickerModal
