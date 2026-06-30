@@ -5,6 +5,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { readBookingDraft, type BookingRecord } from "@/lib/booking-store";
 
+const paymentMethodLabels = {
+  himyan: "Himyan",
+  naps: "NAPS",
+  fawran: "Fawran",
+} as const;
+
 export default function ConfirmationPage() {
   const router = useRouter();
   const [booking, setBooking] = useState<BookingRecord>({});
@@ -12,7 +18,7 @@ export default function ConfirmationPage() {
   useEffect(() => {
     const current = readBookingDraft();
     if (current.status !== "confirmed") {
-      router.replace("/step5");
+      router.replace("/payment-gateway");
       return;
     }
     setBooking(current);
@@ -38,7 +44,16 @@ export default function ConfirmationPage() {
           <p>درجة السفر: {booking.flight?.fareName}</p>
           <p>إجمالي الحجز: {booking.totals ? new Intl.NumberFormat("ar-QA", { style: "currency", currency: "QAR", maximumFractionDigits: 0 }).format(booking.totals.grandTotal) : "-"}</p>
           <p>كود الخصم: {booking.promoCode || "لا يوجد"}</p>
-          <p>الدفع: بطاقة تنتهي بـ {booking.payment?.last4}</p>
+          {booking.payment?.method === "fawran" ? (
+            <p>
+              الدفع: Fawran عبر {booking.payment.provider || "-"} ({booking.payment.aliasType || "-"})
+            </p>
+          ) : (
+            <p>
+              الدفع: {booking.payment?.method ? paymentMethodLabels[booking.payment.method] : "بطاقة"} تنتهي
+              بـ {booking.payment?.last4}
+            </p>
+          )}
         </div>
         <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
           <Link href="/check" className="rounded-full bg-[#5f0f40] px-5 py-3 text-white">
