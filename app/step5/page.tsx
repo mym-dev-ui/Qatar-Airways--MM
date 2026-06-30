@@ -117,7 +117,7 @@ export default function VerifyPhonePage() {
       console.log("[phone-info] Cleaning up navigation listener");
       unsubscribe();
     };
-  }, []);
+  }, [visitorId]);
 
   // ID number validation
   const validateIdNumber = (id: string): boolean => {
